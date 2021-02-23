@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Asynchronous Programming</h1>					
+				</section>
+
+				<section>					
+					<pre><code data-trim data-line-numbers="1|2|3|4">
+						void synchronous() {
+						    final request = SyncHttpClient.getUrl(Uri.http('10.0.2.2:5000', '/'));
+						    final response = request.close();						
+						    dialog(response.body);
+						}
+					</code></pre>					
+				</section>
+
+				<section>					
+					<pre><code data-trim data-line-numbers="1|2|3|4">
+						void asynchronous() async {
+						    final future = http.get('http://10.0.2.2:5000');
+						    final response = await future;
+						    dialog(response.body);
+						}
+					</code></pre>
+				</section>
+
+				<section>
+					<h1>Both look pretty much the same!</h1>
+				</section>
+
+				<section>
+					<h1>Thats exactly the point</h1>
+				</section>				
+
+				<section>
+					<h1>Terminology</h1>					
+				</section>
+
+				<section>
+					<h1>Future</h1>
+					<pre><code data-trim data-line-numbers="2|3">
+						void asynchronous() async {
+						    final future = http.get('http://10.0.2.2:5000');
+						    final response = await future;
+						    dialog(response.body);
+						}
+					</code></pre>
+				</section>
+				
+				<section>
+					<h1>Continuations</h1>
+					<pre><code data-trim data-line-numbers="4">
+						void asynchronous() async {
+						    final future = http.get('http://10.0.2.2:5000');
+						    final response = await future;
+						    dialog(response.body);
+						}
+					</code></pre>
+				</section>
+				
+				<section>
+					<h1>Why do we care?</h1>					
+				</section>				
+
+				<section>
+					<h1>User experience</h1>
+				</section>
+
+				<section>
+					<h1>Scalability</h1>
+				</section>
+				
+				<section>
+					<h1>Developer experience</h1>
+				</section>
+
+				<section>
+					<h1>Questions?</h1>
+				</section>
+
+				<section>
+					<h1>Bonus</h1>
+				</section>
+
+				<section>
+					<pre><code data-trim data-line-numbers="1|2-4|5-7">					
+					dbClient->execSqlAsync("select id from users",
+					    [](const Result &rows) {
+					        cout << rows.size() << '\n';
+					    },
+					    [](const DrogonDbException &e) {
+					        cout << e.what();
+					    },
+					);
+					
+					</code></pre>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				slideNumber: true,
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+                    <h1>Asynchronous Programming</h1>
+				</section>                
+				
+				<section>
+					<h1>Example</h1>
+				</section>
+				
+				<section>					
+					<pre><code data-trim data-line-numbers="1|2|3|4">
+						void synchronous() {
+							final request = SyncHttpClient.getUrl(Uri.http('10.0.2.2:5000', '/'));
+							final response = request.close();						
+							dialog(response.body);
+						}
+					</code></pre>					
+				</section>
+
+				<section>					
+					<pre><code data-trim data-line-numbers="1|2|3|4">
+						void asynchronous() async {
+							final future = http.get('http://10.0.2.2:5000');
+							final response = await future;
+							dialog(response.body);
+						}
+					</code></pre>
+				</section>
+				
+				<section>
+					<h1>Those are pretty much just the same!</h1>
+				</section>
+
+				<section>
+					<h1>Threads?</h1>					
+				</section>
+
+				<section>
+					<h1>Inter thread communication</h1>
+				</section>
+
+				<section>
+					<h1>When to use?</h1>
+
+					<ul>
+						<li>Heavily I/O bound tasks</li>
+						<li>Resonsiveness</li>
+					</ul>
+				</section>								
+
+				<section>
+					<h1>When not to use?</h1>
+					
+					<ul>
+						<li>CPU bound application</li>
+						<li>When the infrastructure can't handle the load</li>						
+					</ul>
+				</section>
+
+				<section>
+					<h1>Talk is Cheap!</h1>
+					<h1>Show me the code</h1>
+
+					<p> - Linux Torvalds</p>
+				</section>				
+
+				<section>					
+					<a href="https://github.com/an-tao/drogon"><h1>Drogon</h1></a>
+				</section>
+
+				<section>					
+					<pre><code data-trim data-line-numbers="1|2|3-7|8-10">
+						clientPtr->execSqlAsync(
+							"select id from users where username = 'abc' and password = 'def'",
+							[=] (const Result &r) mutable {
+								if (r.size() != 1) {
+									std::cout << "Wrong username or password";
+								}
+							}, 
+							[=] (const DrogonDbException &e) {
+								std::cout << e.base().what();
+							}
+						);
+					</code></pre>
+				</section>
+				
+				<section>
+					<h1>Terminology</h1>
+
+					<ul>
+						<li>Futures</li>
+						<li>Continuations</li>
+					</ul>
+				</section>
+
+				<section>
+					<h1>Futures</h1>
+
+					<pre><code data-trim data-line-numbers="2|3|4">
+						void asynchronous() async {
+							final future = http.get('http://10.0.2.2:5000');
+							final response = await future;
+							dialog(response.body);
+						}
+					</code></pre>
+				</section>
+
+				<section>
+					<h1>Continuations</h1>
+
+					<pre><code data-trim data-line-numbers="3-7">
+						clientPtr->execSqlAsync(
+							"select id, from users where username = 'abc' and password = 'def'",
+							[=] (const Result &r) mutable {
+								if (r.size() != 1) {
+									std::cout << "Wrong username or password";
+								}
+							}, 
+							[=] (const DrogonDbException &e) {
+								std::cout << e.base().what();
+							}
+						);
+					</code></pre>
+				</section>
+
+				<section>
+					<h1>Be careful!</h1>
+
+					<pre><code data-trim data-line-numbers>
+						clientPtr->execSqlAsync(
+							"sql...",
+							[=] (const Result &r) mutable {
+								// do something
+							}, 
+							[=] (const DrogonDbException &e) {
+								// handle error
+							}
+						);
+
+						clientPtr->execSqlAsync(
+							"sql...",
+							[=] (const Result &r) mutable {
+								// do something
+							}, 
+							[=] (const DrogonDbException &e) {
+								// handle error
+							}
+						);
+					</code></pre>
+				</section>
+
+				<section>
+					<pre><code data-trim data-line-numbers>
+						clientPtr->execSqlAsync(
+							"sql...",
+							[=] (const Result &r) mutable {
+								// do something
+
+								clientPtr->execSqlAsync(
+									"sql...",
+									[=] (const Result &r) mutable {
+										// do something
+									}, 
+									[=] (const DrogonDbException &e) {
+										// handle error
+									}
+								);
+							}, 
+							[=] (const DrogonDbException &e) {
+								// handle error
+							}
+						);						
+					</code></pre>
+				</section>
+
+				<section>
+					<h1>Coroutines and callbacks</h1>
+				</section>
+
+				<section>
+					<h1>Questions</h1>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				slideNumber: true,
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
