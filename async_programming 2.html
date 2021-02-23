@@ -127,12 +127,12 @@ std::vector&lt;bool&gt; threads2(std::vector&lt;int&gt; user_ids) {
 	std::vector&lt;bool&gt; result(size);
 
 	/// std::mutex is move only
-	auto mutex = std::make_shared&lt;std::mutex&gt;();
+	std::mutex mutex;
 							
 	for (int i = 0; i < size; i++) {
 		int id = user_ids[i];                                    
-		auto t = [i, id, &result, mutex] () {
-			std::lock_guard&lt;std::mutex&gt; guard(*mutex);
+		auto t = [i, id, &result, &mutex] () {
+			std::lock_guard&lt;std::mutex&gt; guard(mutex);
 			result[i] = is_user_active(id);
 		};                        
 		threads[i] = std::thread(t);
