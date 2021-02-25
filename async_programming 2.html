@@ -88,10 +88,10 @@
                             
                             for (int i = 0; i < size; i++) {
                                 int id = user_ids[i];                                    
-                                auto t = [=] () {
+                                auto work = [=] () {
                                     std::cout << is_user_active(id) << ' ';
                                 };                        
-                                threads[i] = std::thread(t);
+                                threads[i] = std::thread(work);
                             }
                         
                             for (int i = 0; i < size; i++) {
@@ -120,29 +120,28 @@
 				</section>
 
 				<section>
-					<pre><code data-trim="" data-line-numbers="4|6-7|12-13|22">
+					<pre><code data-trim="" data-line-numbers="4|6-7|11-12|21">
 std::vector&lt;bool&gt; threads2(std::vector&lt;int&gt; user_ids) {
-	int size = user_ids.size();                            
-	std::vector&lt;std::thread&gt; threads(size);
-	std::vector&lt;bool&gt; result(size);
-
-	/// std::mutex is move only
-	std::mutex mutex;
-							
-	for (int i = 0; i < size; i++) {
-		int id = user_ids[i];                                    
-		auto t = [i, id, &result, &mutex] () {
-			std::lock_guard&lt;std::mutex&gt; guard(mutex);
-			result[i] = is_user_active(id);
-		};                        
-		threads[i] = std::thread(t);
-	}
-						
-	for (int i = 0; i < size; i++) {
-		threads[i].join();
-	}
-						
-	return result;
+    int size = user_ids.size();                            
+    std::vector&lt;std::thread&gt; threads(size);
+    std::vector&lt;bool&gt; result(size);
+    
+    std::mutex mutex;
+                            
+    for (int i = 0; i < size; i++) {
+        int id = user_ids[i];                                    
+        auto work = [i, id, &result, &mutex] () {
+            std::lock_guard&lt;std::mutex&gt; guard(mutex);
+            result[i] = is_user_active(id);
+        };                        
+        threads[i] = std::thread(work);
+    }
+                        
+    for (int i = 0; i < size; i++) {
+        threads[i].join();
+    }
+                        
+    return result;
 }
                     </code></pre>
 				</section>
@@ -152,60 +151,64 @@ std::vector&lt;bool&gt; threads2(std::vector&lt;int&gt; user_ids) {
 				</section>
 
 				<section>
-					<pre><code data-trim="" data-line-numbers="11-15">
-						std::vector&lt;bool&gt; threads3(std::vector&lt;int&gt; user_ids) {
-							int size = user_ids.size();                            
-							std::vector&lt;std::thread&gt; threads(size);
-							std::vector&lt;bool&gt; result(size);
-						
-							/// std::mutex is move only
-							auto mutex = std::make_shared&lt;std::mutex&gt;();
-													
-							for (int i = 0; i < size; i++) {
-								int id = user_ids[i];                                    
-								auto t = [i, id, &result, mutex] () {
-									bool temp = is_user_active(id);
-									std::lock_guard&lt;std::mutex&gt; guard(*mutex);
-									result[i] = temp;
-								};                        
-								threads[i] = std::thread(t);
-							}
-												
-							for (int i = 0; i < size; i++) {
-								threads[i].join();
-							}
-												
-							return result;
-						}
+					<pre><code data-trim="" data-line-numbers="10-14">
+std::vector&lt;bool&gt; threads3(std::vector&lt;int&gt; user_ids) {
+    int size = user_ids.size();                            
+    std::vector&lt;std::thread&gt; threads(size);
+    std::vector&lt;bool&gt; result(size);
+                            
+    std::mutex mutex;
+                            
+    for (int i = 0; i < size; i++) {
+        int id = user_ids[i];                                    
+        auto work = [i, id, &result, &mutex] () {
+            bool is_active = is_user_active(id);
+            std::lock_guard&lt;std::mutex&gt; guard(mutex);
+            result[i] = is_active;
+        };
+        threads[i] = std::thread(work);
+    }
+                        
+    for (int i = 0; i < size; i++) {
+        threads[i].join();
+    }
+                        
+    return result;
+}
 					</code></pre>
-				</section>
+                </section>
+                
+                <section>
+                    <h1>Silly mistakes</h1>
+
+                    <p>Like forgetting to take result by reference</p>
+                </section>
 
 				<section>
-					<pre><code data-trim="" data-line-numbers="11">
-						std::vector&lt;bool&gt; threads3(std::vector&lt;int&gt; user_ids) {
-							int size = user_ids.size();                            
-							std::vector&lt;std::thread&gt; threads(size);
-							std::vector&lt;bool&gt; result(size);
-						
-							/// std::mutex is move only
-							auto mutex = std::make_shared&lt;std::mutex&gt;();
-													
-							for (int i = 0; i < size; i++) {
-								int id = user_ids[i];                                    
-								auto t = [i, id, result, mutex] () {
-									bool temp = is_user_active(id);
-									std::lock_guard&lt;std::mutex&gt; guard(*mutex);
-									result[i] = temp;
-								};                        
-								threads[i] = std::thread(t);
-							}
-												
-							for (int i = 0; i < size; i++) {
-								threads[i].join();
-							}
-												
-							return result;
-						}
+					<pre><code data-trim="" data-line-numbers="10">
+std::vector&lt;bool&gt; threads3(std::vector&lt;int&gt; user_ids) {
+    int size = user_ids.size();                            
+    std::vector&lt;std::thread&gt; threads(size);
+    std::vector&lt;bool&gt; result(size);
+                            
+    std::mutex mutex;
+                            
+    for (int i = 0; i < size; i++) {
+        int id = user_ids[i];                                    
+        auto work = [i, id, result, mutex] () {
+            bool temp = is_user_active(id);
+            std::lock_guard&lt;std::mutex&gt; guard(mutex);
+            result[i] = temp;
+        };                        
+        threads[i] = std::thread(work);
+    }
+                        
+    for (int i = 0; i < size; i++) {
+        threads[i].join();
+    }
+                        
+    return result;
+}
 					</code></pre>
 				</section>
 
@@ -238,22 +241,22 @@ std::vector&lt;bool&gt; threads2(std::vector&lt;int&gt; user_ids) {
                 <section>                    
                     <pre><code data-trim="" data-line-numbers="4|5|10|13-15|17">
 std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
-	int size = user_ids.size();        
-						
-	std::vector&lt;std::future&lt;bool&gt;&gt; futures(size);						
-	std::vector&lt;bool&gt; result;
+    int size = user_ids.size();        
+                        
+    std::vector&lt;std::future&lt;bool&gt;&gt; futures(size);						
+    std::vector&lt;bool&gt; result;
 
-	for (int i = 0; i < size; i++) {
-		int id = user_ids[i];		
+    for (int i = 0; i < size; i++) {
+        int id = user_ids[i];		
 
-		futures[i] = std::async(std::launch::async, is_user_active, id);
-	}
+        futures[i] = std::async(std::launch::async, is_user_active, id);
+    }
 
-	for (int i = 0; i < size; i++) {
-		result[i] = futures[i].get();
-	}
+    for (int i = 0; i < size; i++) {
+        result[i] = futures[i].get();
+    }
 
-	return result;
+    return result;
 }
                     </code></pre>
                 </section>
@@ -274,7 +277,7 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 					<h1>Solution?</h1>
 
 					<ul>
-						<li>Divide the program into independent tasks</li>
+						<li>Divide the program into self contained tasks</li>
 						<li>Schedule tasks on available threads</li>
 						<li>Let the kernel notify you when I/O is complete</li>
 					</ul>
@@ -290,64 +293,45 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 				</section>
 
 				<section>
-					<h1>When to use?</h1>
-
-					<ul>
-						<li>Heavily I/O bound tasks</li>
-						<li>Resonsiveness</li>
-					</ul>
-				</section>								
-
-				<section>
-					<h1>When not to use?</h1>
-					
-					<ul>
-						<li>CPU bound application</li>
-						<li>When the infrastructure can't handle the load</li>						
-					</ul>
-				</section>						
-
-				<section>
 					<h1>Drogon example</h1>
 
-					<pre><code data-trim data-line-numbers="1|2|3-7|8-10">
-						clientPtr->execSqlAsync(
-							"select id, from users where username = 'abc' and password = 'def'",
-							[=] (const Result &r) mutable {
-								if (r.size() != 1) {
-									std::cout << "Wrong username or password";
-								}
-							}, 
-							[=] (const DrogonDbException &e) {
-								std::cout << e.base().what();
-							}
-						);
+					<pre><code data-trim data-line-numbers="1|2|3-5|6-8">
+                        clientPtr->execSqlAsync(
+                            "select id from users",
+                            [=] (const Result &result) {
+                                process(result);
+                            }, 
+                            [=] (const DrogonDbException &e) {
+                                handle(error);
+                            }
+                        );
 					</code></pre>
 				</section>
 
 				<section>
 					<h1>Be careful!</h1>
 
-					<pre><code data-trim data-line-numbers>
-						clientPtr->execSqlAsync(
-							"sql...",
-							[=] (const Result &r) mutable {
-								// do something
-							}, 
-							[=] (const DrogonDbException &e) {
-								// handle error
-							}
-						);
-
-						clientPtr->execSqlAsync(
-							"sql...",
-							[=] (const Result &r) mutable {
-								// do something
-							}, 
-							[=] (const DrogonDbException &e) {
-								// handle error
-							}
-						);
+					<pre><code data-trim data-line-numbers="1-10|12-20">                        
+                        clientPtr->execSqlAsync(
+                            "create temporary table active_users as "
+                            "select * from users where active is true",
+                            [=] (const Result &result) {
+                                process(result);
+                            }, 
+                            [=] (const DrogonDbException &error) {
+                                handle(error);
+                            }
+                        );
+                        
+                        clientPtr->execSqlAsync(
+                            "select count(*) from active_users",
+                            [=] (const Result &result) {
+                                process(result);
+                            }, 
+                            [=] (const DrogonDbException &error) {
+                                handle(error);
+                            }
+                        );
 					</code></pre>
 				</section>
 
@@ -355,25 +339,26 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 					<h1>Correct code</h1>
 
 					<pre><code data-trim data-line-numbers>
-						clientPtr->execSqlAsync(
-							"sql...",
-							[=] (const Result &r) mutable {
-								// do something
-
-								clientPtr->execSqlAsync(
-									"sql...",
-									[=] (const Result &r) mutable {
-										// do something
-									}, 
-									[=] (const DrogonDbException &e) {
-										// handle error
-									}
-								);
-							}, 
-							[=] (const DrogonDbException &e) {
-								// handle error
-							}
-						);						
+                        clientPtr->execSqlAsync(
+                            "create temporary table active_users as "
+                            "select * from users where active is true",
+                            [=] (const Result &result) {
+                                process(result);
+                        
+                                clientPtr->execSqlAsync(
+                                    "select count(*) from active_users",
+                                    [=] (const Result &result) {
+                                        process(result);
+                                    }, 
+                                    [=] (const DrogonDbException &error) {
+                                        handle(error);
+                                    }
+                                );
+                            }, 
+                            [=] (const DrogonDbException &error) {
+                                handle(error);
+                            }
+                        );						
 					</code></pre>
 				</section>
 
@@ -388,7 +373,7 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 				<section>
 					<h1>Rules of thumb</h1>
 
-					<p>Each callback should contain all the information it needs to do its job i.e. no references</p>
+					<p>Functions/Lambdas should be self contained i.e. no references</p>
 				</section>
 
 				<section>
@@ -402,8 +387,42 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 				</section>
 
 				<section>
-					<h1>Coroutines and callbacks</h1>
+					<h1>When to use?</h1>
+
+					<ul>
+						<li>Heavily I/O bound tasks</li>
+						<li>Responsiveness</li>
+					</ul>
+				</section>								
+
+				<section>
+					<h1>When not to use?</h1>
+					
+					<ul>
+						<li>CPU bound application</li>
+						<li>When the infrastructure can't handle the load</li>						
+					</ul>
 				</section>
+
+				<section>
+					<h1>Implementation details</h1>
+					<ul>
+						<li>Coroutines</li>
+						<li>Callbacks</li>
+					</ul>
+                </section>
+                
+                <section>
+                    <h1>C++11</h1>
+                </section>
+
+                <section>
+                    <h1>Except for</h1>
+
+                    <pre><code data-trim="" data-line-numbers="">
+                        std::this_thread::sleep_for(200ms);
+                    </code></pre>
+                </section>
 
 				<section>
 					<h1>Questions</h1>
