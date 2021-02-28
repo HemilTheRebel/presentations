@@ -247,7 +247,7 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
     int size = user_ids.size();        
                         
     std::vector&lt;std::future&lt;bool&gt;&gt; futures(size);						
-    std::vector&lt;bool&gt; result;
+    std::vector&lt;bool&gt; result(size);
 
     for (int i = 0; i < size; i++) {
         int id = user_ids[i];		
