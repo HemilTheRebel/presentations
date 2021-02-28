@@ -4,20 +4,23 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
-
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+        <title>reveal.js</title>
+        
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/dist/reset.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/dist/reveal.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/dist/theme/black.css" id="theme">
 
 		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/plugin/highlight/monokai.css" id="highlight-theme">
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
 				<section>
+                    <h4>Overview of</h4>
                     <h1>Asynchronous Programming</h1>
+
+                    <a href="https://www.linkedin.com/in/hemil-ruparel-2aa513166/">- Hemil Ruparel</a>                    
 				</section>
 				
 				<section>
@@ -195,7 +198,7 @@ std::vector&lt;bool&gt; threads3(std::vector&lt;int&gt; user_ids) {
                             
     for (int i = 0; i < size; i++) {
         int id = user_ids[i];                                    
-        auto work = [i, id, result, mutex] () {
+        auto work = [i, id, result, &mutex] () {
             bool temp = is_user_active(id);
             std::lock_guard&lt;std::mutex&gt; guard(mutex);
             result[i] = temp;
@@ -429,11 +432,12 @@ std::vector&lt;bool&gt; async(std::vector&lt;int&gt; user_ids) {
 				</section>
 			</div>
 		</div>
+		
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/dist/reveal.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/plugin/notes/notes.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/plugin/markdown/markdown.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.0.2/plugin/highlight/highlight.js"></script>
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
 		<script>
 			// More info about initialization & config:
 			// - https://revealjs.com/initialization/
